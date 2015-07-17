@@ -38,7 +38,37 @@
  */
 
 #include "smsdk_ext.h"
+#include "datamap.h"
+#include "dt_send.h"
+#include "server_class.h"
+#include "sm_namehashset.h"
 
+// Taken from CHalfLife2
+NameHashSet<DataTableInfo *> m_Classes;
+
+struct DataTableInfo
+{
+	struct SendPropPolicy
+	{
+		static inline bool matches(const char *name, const sm_sendprop_info_t &info)
+		{
+			return strcmp(name, info.prop->GetName()) == 0;
+		}
+	};
+
+	static inline bool matches(const char *name, const DataTableInfo *info)
+	{
+		return strcmp(name, info->sc->GetName()) == 0;
+	}
+
+	DataTableInfo(ServerClass *sc)
+		: sc(sc)
+	{
+	}
+
+	ServerClass *sc;
+	//NameHashSet<sm_sendprop_info_t, SendPropPolicy> lookup;
+};
 
 /**
  * @brief Sample implementation of the SDK Extension.
@@ -91,7 +121,7 @@ public:
 	 * @param late			Whether or not Metamod considers this a late load.
 	 * @return				True to succeed, false to fail.
 	 */
-	//virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late);
+	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);
 
 	/**
 	 * @brief Called when Metamod is detaching, after the extension version is called.
@@ -114,6 +144,8 @@ public:
 	 */
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
+public: // CHalfLife2
+	DataTableInfo *_FindServerClass(const char *classname);
 };
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

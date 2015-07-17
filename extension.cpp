@@ -30,12 +30,48 @@
  */
 
 #include "extension.h"
+#include "eiface.h"
 
 /**
  * @file extension.cpp
  * @brief Implement extension code here.
  */
+IServerGameDLL *gamedll = NULL;
 
 NetpropLookup g_NetpropLookup;		/**< Global singleton for extension's main interface */
 
 SMEXT_LINK(&g_NetpropLookup);
+
+bool NetpropLookup::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
+{
+	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
+
+	return true;
+}
+
+
+// Taken from CHalfLife2
+
+DataTableInfo *NetpropLookup::_FindServerClass(const char *classname)
+{
+	DataTableInfo *pInfo = NULL;
+	if (!m_Classes.retrieve(classname, &pInfo))
+	{
+		ServerClass *sc = gamedll->GetAllServerClasses();
+		while (sc)
+		{
+			if (strcmp(classname, sc->GetName()) == 0)
+			{
+				pInfo = new DataTableInfo(sc);
+				m_Classes.insert(classname, pInfo);
+				break;
+			}
+			sc = sc->m_pNext;
+		}
+		if (!pInfo)
+			return NULL;
+	}
+
+	return pInfo;
+}
+
