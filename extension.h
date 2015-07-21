@@ -43,6 +43,26 @@
 #include "server_class.h"
 #include "sm_namehashset.h"
 
+
+// Taken from smn_entities
+
+enum PropType
+{
+	Prop_Send = 0,
+	Prop_Data
+};
+
+enum PropFieldType
+{
+	PropField_Unsupported,		/**< The type is unsupported. */
+	PropField_Integer,			/**< Valid for SendProp and Data fields */
+	PropField_Float,			/**< Valid for SendProp and Data fields */
+	PropField_Entity,			/**< Valid for Data fields only (SendProp shows as int) */
+	PropField_Vector,			/**< Valid for SendProp and Data fields */
+	PropField_String,			/**< Valid for SendProp and Data fields */
+	PropField_String_T,			/**< Valid for Data fields.  Read only! */
+};
+
 // Taken from CHalfLife2
 
 struct DataTableInfo
@@ -70,6 +90,19 @@ struct DataTableInfo
 };
 
 NameHashSet<DataTableInfo *> m_Classes;
+
+// Our stuff
+
+struct prop_info_t
+{
+	char *type_name;
+	char *prop;
+	int index;
+	CBaseEntity *pEntity;
+	edict_t *pEdict;
+	int bit_count;
+	bool is_unsigned;
+};
 
 /**
  * @brief Sample implementation of the SDK Extension.
@@ -145,7 +178,7 @@ public:
 	 */
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
-public: // CHalfLife2
+protected: // CHalfLife2
 	DataTableInfo *_FindServerClass(const char *classname);
 };
 

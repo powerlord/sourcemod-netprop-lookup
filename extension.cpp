@@ -71,3 +71,115 @@ DataTableInfo *NetpropLookup::_FindServerClass(const char *classname)
 	return pInfo;
 }
 
+// Taken from smn_entities
+
+inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
+{
+	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
+	IServerNetworkable *pNet = pUnk->GetNetworkable();
+
+	if (!pNet)
+	{
+		return NULL;
+	}
+
+	return pNet->GetEdict();
+}
+
+// Modified from smn_entities
+
+/* Given an entity reference or index, fill out a CBaseEntity and/or edict.
+If lookup is successful, returns true and writes back the two parameters.
+If lookup fails, returns false and doesn't touch the params.  */
+bool IndexToAThings(cell_t num, CBaseEntity **pEntData, edict_t **pEdictData)
+{
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(num);
+
+	if (!pEntity)
+	{
+		return false;
+	}
+
+	int index = gamehelpers->ReferenceToIndex(num);
+	if (index > 0 && index <= playerhelpers->GetMaxClients())
+	{
+		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(index);
+		if (!pPlayer || !pPlayer->IsConnected())
+		{
+			return false;
+		}
+	}
+
+	if (pEntData)
+	{
+		*pEntData = pEntity;
+	}
+
+	if (pEdictData)
+	{
+		edict_t *pEdict = ::BaseEntityToEdict(pEntity);
+		if (!pEdict || pEdict->IsFree())
+		{
+			pEdict = NULL;
+		}
+
+		*pEdictData = pEdict;
+	}
+
+	return true;
+}
+
+static cell_t GetEntPathProp(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	edict_t *pEdict;
+	int bit_count;
+	bool is_unsigned = false;
+
+	prop_info_t propInfo;
+	propInfo.index = params[1];
+
+	if (!IndexToAThings(params[1], &propInfo.pEntity, &propInfo.pEdict))
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	pContext->LocalToString(params[3], &propInfo.prop);
+
+}
+
+bool FindPropSend(SendPropType type, const char *type_name, prop_info_t propInfo, char *error, int maxlen)
+{
+	sm_sendprop_info_t info;
+	SendProp *pProp;
+	IServerUnknown *pUnk = (IServerUnknown *)propInfo.pEntity;
+	IServerNetworkable *pNet = pUnk->GetNetworkable();
+
+	if (!pNet)
+	{
+		snprintf(error, maxlen, "Edict %d (%d) is not networkable", gamehelpers->ReferenceToIndex(propInfo.index), propInfo.index);
+		return false;
+	}
+
+	if (!FindSendPropInfo(pNet->GetServerClass(), propInfo.prop, &info))
+	{
+
+	}
+}
+
+/*
+The void pointer of base is important simply because it plus the offset are the ultimate location of what
+we're looking for.
+
+This is necessary for CUtlVector props, which relocate the base
+*/
+bool FindSendPropInTable(SendTable *pTable,
+	const char *name,
+	sm_sendprop_info_t *info,
+	unsigned int offset,
+	void *base)
+{
+
+}
