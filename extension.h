@@ -44,7 +44,6 @@
 #include "sm_namehashset.h"
 
 // Taken from CHalfLife2
-NameHashSet<DataTableInfo *> m_Classes;
 
 struct DataTableInfo
 {
@@ -69,6 +68,8 @@ struct DataTableInfo
 	ServerClass *sc;
 	//NameHashSet<sm_sendprop_info_t, SendPropPolicy> lookup;
 };
+
+NameHashSet<DataTableInfo *> m_Classes;
 
 /**
  * @brief Sample implementation of the SDK Extension.

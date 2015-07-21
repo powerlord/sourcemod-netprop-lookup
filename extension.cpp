@@ -36,16 +36,12 @@
  * @file extension.cpp
  * @brief Implement extension code here.
  */
-IServerGameDLL *gamedll = NULL;
-
 NetpropLookup g_NetpropLookup;		/**< Global singleton for extension's main interface */
 
 SMEXT_LINK(&g_NetpropLookup);
 
 bool NetpropLookup::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
-	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
-
 	return true;
 }
 
